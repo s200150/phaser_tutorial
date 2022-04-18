@@ -19,6 +19,7 @@
         type: Phaser.AUTO,
         width: 1600,
         height: 900,
+        backgroundColor: '#676767',
         physics: {
             default: 'arcade',
             arcade: {
@@ -38,12 +39,11 @@
     var cursors;
 
     function preload () {
+        this.load.image('bomb' , 'assets/bomb.png');
         this.load.spritesheet("dude" , 'assets/dude.png' , {frameWidth: 32, frameHeight: 48});
     }
 
     function create() {
-
-        //platforms = this.physics.add.staticGroup();
 
         player = this.physics.add.sprite(800,450,'dude');
 
@@ -82,6 +82,21 @@
         });
 
         cursors = this.input.keyboard.createCursorKeys();
+
+        const circle = new Phaser.Geom.Circle(player.x, player.y, 130);
+        this.group = this.add.group({ key: 'bomb', frameQuantity: 4 });
+
+        Phaser.Actions.PlaceOnCircle(this.group.getChildren(), circle);
+
+        this.tween = this.tweens.addCounter({
+            from: 130,
+            to: 130,
+            duration: 3000,
+            delay: 2000,
+            ease: 'Sine.easeInOut',
+            repeat: -1,
+            yoyo: true
+        });
     }
 
     function update () {
@@ -139,6 +154,8 @@
             player.setVelocityY(0);
 
             player.anims.play('turn');
+
+            Phaser.Actions.RotateAroundDistance(this.group.getChildren(), { x: player.x, y: player.y }, 0.05, this.tween.getValue());
         }
     }
 </script>
