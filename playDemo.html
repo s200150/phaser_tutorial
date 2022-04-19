@@ -106,52 +106,85 @@
         const Down = cursors.down.isDown
 
         if (Right && Down){
+            /*
             player.setVelocityX(160);
             player.setVelocityY(160);
+             */
+
+            player.x += 1.6;
+            player.y += 1.6;
 
             player.anims.play('right' , true);
         }
         else if (Right && Up) {
+            /*
             player.setVelocityX(160);
             player.setVelocityY(-160);
+             */
+
+            player.x += 1.6;
+            player.y += -1.6;
 
             player.anims.play('right' , true);
         }
         else if (Left && Down){
+            /*
             player.setVelocityX(-160);
             player.setVelocityY(160);
+            */
+
+            player.x += -1.6;
+            player.y += 1.6;
 
             player.anims.play('left' , true);
         }
         else if (Left && Up){
+            /*
             player.setVelocityX(-160);
             player.setVelocityY(-160);
+             */
+
+            player.x += -1.6;
+            player.y += -1.6;
 
             player.anims.play('left' , true);
         }
         else if (Left){
-            player.setVelocityX(-160);
+            //player.setVelocityX(-160);
+
+            player.x += -1.6;
 
             player.anims.play('left' , true);
         }
         else if (Right){
-            player.setVelocityX(160);
+            //player.setVelocityX(160);
+
+            player.x += 1.6;
 
             player.anims.play('right' , true);
         }
         else if (Up){
-            player.setVelocityY(-160);
+            //player.setVelocityY(-160);
+
+            player.y += -1.6;
 
             player.anims.play('up' , true);
         }
         else if (Down) {
-            player.setVelocityY(160);
+            //player.setVelocityY(160);
+
+            player.y += 1.6;
 
             player.anims.play('down' , true)
         }
         else {
+            /*
             player.setVelocityX(0);
             player.setVelocityY(0);
+             */
+
+            player.x += 0;
+            player.y += 0;
 
             player.anims.play('turn');
         }
