@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>でもぷれい</title>
     <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
-    <
     <style type="text/css">
         body {
             margin: 0;
@@ -34,9 +33,11 @@
         }
     };
 
-    var game = new Phaser.Game(config);
     var player;
     var cursors;
+    var speed;
+
+    var game = new Phaser.Game(config);
 
     function preload () {
         this.load.image('bomb' , 'assets/bomb.png');
@@ -45,7 +46,7 @@
 
     function create() {
 
-        player = this.physics.add.sprite(800,450,'dude');
+        player = this.add.sprite(800,450,'dude');
 
         this.anims.create({
             key:'left',
@@ -83,113 +84,69 @@
 
         cursors = this.input.keyboard.createCursorKeys();
 
-        const circle = new Phaser.Geom.Circle(player.x, player.y, 130);
-        this.group = this.add.group({ key: 'bomb', frameQuantity: 4 });
-
-        Phaser.Actions.PlaceOnCircle(this.group.getChildren(), circle);
-
-        this.tween = this.tweens.addCounter({
-            from: 130,
-            to: 130,
-            duration: 3000,
-            delay: 2000,
-            ease: 'Sine.easeInOut',
-            repeat: -1,
-            yoyo: true
-        });
+        speed = Phaser.Math.GetSpeed(1600, 1);
     }
 
     function update () {
+        console.log( " update first " )
+
         const Right = cursors.right.isDown
         const Left = cursors.left.isDown
         const Up = cursors.up.isDown
         const Down = cursors.down.isDown
 
         if (Right && Down){
-            /*
-            player.setVelocityX(160);
-            player.setVelocityY(160);
-             */
-
-            player.x += 1.6;
-            player.y += 1.6;
+            player.x += speed / Math.sqrt(2) ;
+            player.y += speed / Math.sqrt(2) ;
 
             player.anims.play('right' , true);
         }
         else if (Right && Up) {
-            /*
-            player.setVelocityX(160);
-            player.setVelocityY(-160);
-             */
-
-            player.x += 1.6;
-            player.y += -1.6;
+            player.x += speed / Math.sqrt(2) ;
+            player.y -= speed / Math.sqrt(2) ;
 
             player.anims.play('right' , true);
         }
         else if (Left && Down){
-            /*
-            player.setVelocityX(-160);
-            player.setVelocityY(160);
-            */
-
-            player.x += -1.6;
-            player.y += 1.6;
+            player.x -= speed / Math.sqrt(2) ;
+            player.y += speed / Math.sqrt(2) ;
 
             player.anims.play('left' , true);
         }
         else if (Left && Up){
-            /*
-            player.setVelocityX(-160);
-            player.setVelocityY(-160);
-             */
-
-            player.x += -1.6;
-            player.y += -1.6;
+            player.x -= speed / Math.sqrt(2) ;
+            player.y -= speed / Math.sqrt(2);
 
             player.anims.play('left' , true);
         }
         else if (Left){
-            //player.setVelocityX(-160);
-
-            player.x += -1.6;
+            player.x -= speed ;
 
             player.anims.play('left' , true);
         }
         else if (Right){
-            //player.setVelocityX(160);
-
-            player.x += 1.6;
+            player.x += speed ;
 
             player.anims.play('right' , true);
         }
         else if (Up){
-            //player.setVelocityY(-160);
-
-            player.y += -1.6;
+            player.y -= speed ;
 
             player.anims.play('up' , true);
         }
         else if (Down) {
-            //player.setVelocityY(160);
 
-            player.y += 1.6;
+            player.y += speed ;
 
-            player.anims.play('down' , true)
+            player.anims.play('down' , true);
         }
         else {
-            /*
-            player.setVelocityX(0);
-            player.setVelocityY(0);
-             */
 
             player.x += 0;
             player.y += 0;
 
             player.anims.play('turn');
         }
-
-        Phaser.Actions.RotateAroundDistance(this.group.getChildren(), { x: player.x, y: player.y }, 0.05, this.tween.getValue());
     }
 </script>
 
