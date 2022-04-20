@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>試験場</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<script type="text/javascript">
+
+    var config = {
+        type: Phaser.WEBGL,
+        width: 1600,
+        height: 900,
+        backgroundColor: '#2d2d2d',
+        parent: 'phaser-example',
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
+        }
+    };
+
+    var bullets;
+    var dude;
+    var speed;
+    var stats;
+    var lastFired = 0;
+    var isDown = false;
+    var mouseX = 0;
+    var mouseY = 0;
+
+    var game = new Phaser.Game(config);
+
+    function preload ()
+    {
+        this.load.spritesheet("dude" , 'assets/dude.png' , {frameWidth: 32, frameHeight: 48});
+        this.load.image('bullet1', 'assets/star.png');
+    }
+
+    function create ()
+    {
+        ship = this.add.sprite(800, 450, 'dude').setDepth(1);
+
+        var Bullet = new Phaser.Class({
+
+            Extends: Phaser.GameObjects.Image,
+
+            initialize:
+
+                function Bullet (scene)
+                {
+                    Phaser.GameObjects.Image.call(this, scene, 0, 0, 'bullet1');
+
+                    this.incX = 0;
+                    this.incY = 0;
+                    this.lifespan = 0;
+
+                    this.speed = Phaser.Math.GetSpeed(300, 1);//弾速
+                },
+
+            fire: function (x, y)
+            {
+                this.setActive(true);
+                this.setVisible(true);
+
+                //  Bullets fire from the middle of the screen to the given x/y
+                this.setPosition(800, 450);
+
+                var angle = Phaser.Math.Angle.Between(x, y, ship.x, ship.y);
+
+                this.setRotation(angle);
+
+                this.incX = Math.cos(angle);
+                this.incY = Math.sin(angle);
+
+                this.lifespan = 2000;
+            },
+
+            update: function (time, delta)
+            {
+                this.lifespan -= delta;
+
+                this.x -= this.incX * (this.speed * delta);
+                this.y -= this.incY * (this.speed * delta);
+
+                if (this.lifespan <= 0)
+                {
+                    this.setActive(false);
+                    this.setVisible(false);
+                }
+            }
+
+        });
+
+        bullets = this.add.group({
+            classType: Bullet,
+            maxSize: 5,
+            runChildUpdate: true
+        });
+
+        this.input.on('pointerdown', function (pointer) {
+
+            isDown = true;
+            mouseX = pointer.x;
+            mouseY = pointer.y;
+
+        });
+
+        this.input.on('pointermove', function (pointer) {
+
+            mouseX = pointer.x;
+            mouseY = pointer.y;
+
+        });
+
+        this.input.on('pointerup', function (pointer) {
+
+            isDown = false;
+
+        });
+
+    }
+
+    function update (time, delta)
+    {
+
+        if (isDown && time > lastFired)
+        {
+            var bullet = bullets.get();
+
+            if (bullet)
+            {
+                bullet.fire(mouseX, mouseY);
+
+                lastFired = time + 50;
+            }
+        }
+        //ship.setRotation(Phaser.Math.Angle.Between(mouseX, mouseY, ship.x, ship.y) - Math.PI / 2);
+    }
+</script>
+</body>
+</html>
