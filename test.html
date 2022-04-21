@@ -74,7 +74,7 @@
 
                 var angle = Phaser.Math.Angle.Between(x, y, ship.x, ship.y);
 
-                this.setRotation(angle);
+                //this.setRotation(angle);
 
                 this.incX = Math.cos(angle);
                 this.incY = Math.sin(angle);
@@ -100,7 +100,7 @@
 
         bullets = this.add.group({
             classType: Bullet,
-            maxSize: 5,
+            maxSize: 35,
             runChildUpdate: true
         });
 
@@ -138,10 +138,12 @@
             {
                 bullet.fire(mouseX, mouseY);
 
-                lastFired = time + 50;
+                lastFired = time + 20;
+
+                console.log(delta)
             }
         }
-        //ship.setRotation(Phaser.Math.Angle.Between(mouseX, mouseY, ship.x, ship.y) - Math.PI / 2);
+        ship.setRotation(Phaser.Math.Angle.Between(mouseX, mouseY, ship.x, ship.y) - Math.PI / 2);
     }
 </script>
 </body>
