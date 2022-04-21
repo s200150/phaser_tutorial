@@ -104,26 +104,14 @@
             runChildUpdate: true
         });
 
-        this.input.on('pointerdown', function (pointer) {
-
+        this.input.on('pointermove', function (pointer) {
             isDown = true;
             mouseX = pointer.x;
             mouseY = pointer.y;
-
-        });
-
-        this.input.on('pointermove', function (pointer) {
-
-            mouseX = pointer.x;
-            mouseY = pointer.y;
-
         });
 
         this.input.on('pointerup', function (pointer) {
-
             isDown = false;
-
-
         });
 
         this.anims.create({
