@@ -18,6 +18,13 @@
         width: 1600,
         height: 900,
         backgroundColor: '#2d2d2d',
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: {x: 0},
+                debug: true
+            }
+        },
         parent: 'phaser-example',
         scene: {
             preload: preload,
@@ -26,124 +33,131 @@
         }
     };
 
-    var bullets;
-    var dude;
-    var speed;
-    var stats;
-    var lastFired = 0;
-    var isDown = false;
-    var mouseX = 0;
-    var mouseY = 0;
+    class player {
+        hp = 20;
+        lv = 1;
+        speed = 200;
+    }
+
+    class enemy {
+        hp = 15;
+        lv = 1;
+        speed = 100;
+        atk = 7;
+    }
+
+    class eater extends enemy{}
+
+    var Stage = 1;
 
     var game = new Phaser.Game(config);
 
     function preload ()
     {
-        this.load.spritesheet("dude" , 'assets/dude.png' , {frameWidth: 32, frameHeight: 48});
-        this.load.image('bullet1', 'assets/star.png');
+        this.load.spritesheet("dude", 'assets/dude.png', {frameWidth: 32, frameHeight: 48});
+        this.load.image('enemy1', 'assets/enemy.png');
     }
 
     function create ()
     {
-        ship = this.add.sprite(800, 450, 'dude').setDepth(1);
+        player = this.physics.add.sprite(800 , 450 , 'dude')
 
-        var Bullet = new Phaser.Class({
+        eater = this.physics.add.sprite(800 , 100 , 'enemy1');
 
-            Extends: Phaser.GameObjects.Image,
-
-            initialize:
-
-                function Bullet (scene)
-                {
-                    Phaser.GameObjects.Image.call(this, scene, 0, 0, 'bullet1');
-
-                    this.incX = 0;
-                    this.incY = 0;
-                    this.lifespan = 0;
-
-                    this.speed = Phaser.Math.GetSpeed(300, 1);//弾速
-                },
-
-            fire: function (x, y)
-            {
-                this.setActive(true);
-                this.setVisible(true);
-
-                //  Bullets fire from the middle of the screen to the given x/y
-                this.setPosition(800, 450);
-
-                var angle = Phaser.Math.Angle.Between(x, y, ship.x, ship.y);
-
-                //this.setRotation(angle);
-
-                this.incX = Math.cos(angle);
-                this.incY = Math.sin(angle);
-
-                this.lifespan = 2000;
-            },
-
-            update: function (time, delta)
-            {
-                this.lifespan -= delta;
-
-                this.x -= this.incX * (this.speed * delta);
-                this.y -= this.incY * (this.speed * delta);
-
-                if (this.lifespan <= 0)
-                {
-                    this.setActive(false);
-                    this.setVisible(false);
-                }
-            }
-
+        this.anims.create({
+            key: 'left',
+            frames: this.anims.generateFrameNumbers('dude', {start: 0, end: 3}),
+            frameRate: 10,
+            repeat: -1
         });
 
-        bullets = this.add.group({
-            classType: Bullet,
-            maxSize: 35,
-            runChildUpdate: true
+        this.anims.create({
+            key: 'right',
+            frames: this.anims.generateFrameNumbers('dude', {start: 5, end: 8}),
+            frameRate: 10,
+            repeat: -1
         });
 
-        this.input.on('pointerdown', function (pointer) {
-
-            isDown = true;
-            mouseX = pointer.x;
-            mouseY = pointer.y;
-
+        this.anims.create({
+            key: 'turn',
+            frames: [{key: 'dude', frame: 4}],
+            frameRate: 20
         });
 
-        this.input.on('pointermove', function (pointer) {
-
-            mouseX = pointer.x;
-            mouseY = pointer.y;
-
+        this.anims.create({
+            key: 'up',
+            frames: [{key: 'dude', frame: 4}],
+            frameRate: 10,
+            repeat: -1
         });
 
-        this.input.on('pointerup', function (pointer) {
-
-            isDown = false;
-
+        this.anims.create({
+            key: 'down',
+            frames: [{key: 'dude', frame: 4}],
+            frameRate: 10,
+            repeat: -1
         });
 
+        cursors = this.input.keyboard.createCursorKeys();
+
+        this.physics.add.collider(player , eater , D , null , this);
     }
 
-    function update (time, delta)
+    function update ()
     {
+        const Right = cursors.right.isDown
+        const Left = cursors.left.isDown
+        const Up = cursors.up.isDown
+        const Down = cursors.down.isDown
 
-        if (isDown && time > lastFired)
-        {
-            var bullet = bullets.get();
 
-            if (bullet)
-            {
-                bullet.fire(mouseX, mouseY);
+        if (Right && Down) {
+            player.setVelocityX(160);
+            player.setVelocityY(160);
 
-                lastFired = time + 20;
+            player.anims.play('right', true);
+        } else if (Right && Up) {
+            player.setVelocityX(160);
+            player.setVelocityY(-160);
 
-                console.log(delta)
-            }
+            player.anims.play('right', true);
+        } else if (Left && Down) {
+            player.setVelocityX(-160);
+            player.setVelocityY(160);
+
+            player.anims.play('left', true);
+        } else if (Left && Up) {
+            player.setVelocityX(-160);
+            player.setVelocityY(-160);
+
+            player.anims.play('left', true);
+        } else if (Left) {
+            player.setVelocityX(-160);
+
+            player.anims.play('left', true);
+        } else if (Right) {
+            player.setVelocityX(160);
+
+            player.anims.play('right', true);
+        } else if (Up) {
+            player.setVelocityY(-160);
+
+            player.anims.play('up', true);
+        } else if (Down) {
+            player.setVelocityY(160);
+
+            player.anims.play('down', true)
+        } else {
+            player.setVelocityX(0);
+            player.setVelocityY(0);
+
+            player.anims.play('turn');
         }
-        ship.setRotation(Phaser.Math.Angle.Between(mouseX, mouseY, ship.x, ship.y) - Math.PI / 2);
+
+        function D (player , enemy) {
+            player.setVisible(false)
+        }
+
     }
 </script>
 </body>
