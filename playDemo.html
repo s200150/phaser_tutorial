@@ -23,7 +23,7 @@
             default: 'arcade',
             arcade: {
                 gravity: {x: 0},
-                debug: false
+                debug: true
             }
         },
         scene: {
@@ -35,6 +35,8 @@
 
     var game = new Phaser.Game(config);
 
+    var gameOver = false;
+
     var player;
     var playerHP = 400;
     var InvincibleTime= 0;
@@ -45,9 +47,16 @@
     var mouseY = 0;
 
     var enemy;
-    var enemyPow = 23;
+    var enemySpeed = 50;
+    var enemyPow = 500;
 
     var bombs;
+
+    var TXT = '';
+
+    function seachAngle(ax,ay,bx,by) {
+        return Phaser.Math.Angle.Between(ax , ay , bx , by);
+    }
 
     function preload() {
         this.load.image('enemy1', 'assets/enemy.png');
@@ -60,7 +69,14 @@
         platforms = this.physics.add.staticGroup();
 
         player = this.physics.add.sprite(800, 450, 'dude');
-        enemy = this.physics.add.sprite(1000, 229, 'enemy1');
+
+        const Ex = Math.floor(Math.random() * config.width -1);
+        const Ey = Math.floor(Math.random() * config.height -1);
+
+        Eangle = seachAngle(player.x , player.y , Ex , Ey);
+
+        enemy = this.physics.add.sprite(Ex, Ey, 'enemy1');
+        enemy.setCircle(32)
 
         player.setCollideWorldBounds(true);
         this.physics.add.collider(player, platforms);
@@ -90,12 +106,12 @@
 
                     this.setPosition(player.x, player.y);
 
-                    var angle = Phaser.Math.Angle.Between(x, y, player.x, player.y);
+                    var Fangle = seachAngle(x, y, player.x, player.y);
 
-                    this.incX = Math.cos(angle);
-                    this.incY = Math.sin(angle);
+                    this.incX = Math.cos(Fangle);
+                    this.incY = Math.sin(Fangle);
 
-                    this.lifespan = 3000;
+                    this.lifespan = 1500;
                 },
 
             update:
@@ -114,12 +130,11 @@
 
         bullets = this.physics.add.group({
             classType: Bullet,
-            maxSize: m = 4,
+            maxSize: m = 5,
             runChildUpdate: true
         });
 
         this.physics.add.collider(bullets, platforms);
-
 
         this.input.on('pointermove', function (pointer) {
             mouseX = pointer.x;
@@ -179,13 +194,17 @@
             yoyo: true
         });
 
-        this.physics.add.collider(enemy, bullets, hitS, null, this);
-        this.physics.add.collider(enemy ,bombs , hitB , null , this);
+        this.physics.add.overlap(enemy, bullets, hitS, null, this);
+        this.physics.add.overlap(enemy ,bombs , hitB , null , this);
 
-        this.physics.add.collider(player , enemy , D , null , this);
+        this.physics.add.overlap(player , enemy , D , null , this);
     }
 
     function update(time, delta) {
+        if (gameOver) {
+            return TXT = this.add.text(500,300,'gameover' , {fontSize:'120px' , fill: "#000"});
+        }
+
         const Right = cursors.right.isDown
         const Left = cursors.left.isDown
         const Up = cursors.up.isDown
@@ -241,13 +260,16 @@
             if (bullet) {
                 bullet.fire(mouseX, mouseY);
 
-                lastFired = time + 80;
+                lastFired = time + 80; //発射間隔
+
+                moveEnemy()
             }
         }
 
-        if (time > InvincibleTime) {
+        if (InvincibleTime < time) {
             if (D) {
                 InvincibleTime = time + 500;
+                player.setTint(0xffffff);
             }
         }
 
@@ -255,24 +277,53 @@
             x: player.x,
             y: player.y
         }, 0.05, this.tween.getValue());
+        bombs.allowGravity = false; //　衝突判定時の物理干渉を無効化
     }
 
     function hitS(enemy, bullets) {
         enemy.setTint(0xff0000);
+        bullets.destroy(true)
+        enemyPow -= 9;
+
+        checkHP(enemy , enemyPow);
+        console.log("enemyPow" , enemyPow);
     }
 
     function hitB(enemy, bomb) {
         enemy.setTint(0x0000ff);
+        enemyPow -= 2;
+
+        checkHP(enemy , enemyPow);
+
+        console.log("enemyPow" , enemyPow);
+    }
+
+    function moveEnemy(){
+        enemy.setVelocityX((-1) * Math.cos(Eangle) * enemySpeed)
+        enemy.setVelocityY((-1) * Math.sin(Eangle) * enemySpeed)
     }
 
     function D (player , enemy) {
         player.setTint(0xff0000);
-        enemy.setVisible(false);
+        //enemy.destroy(true);
 
         playerHP -= enemyPow;
 
-        console.log(playerHP)
+        checkHP(player , playerHP);
+        console.log("playerHP" , playerHP);
+        console.log("enemyPow" , enemyPow);
     }
+
+    function checkHP(char , hp) {
+        if (hp <= 0) {
+            char.destroy(true);
+
+            if (char === player) {
+                gameOver = true;
+            }
+        }
+    }
+
 </script>
 
 </body>
